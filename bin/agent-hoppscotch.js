@@ -28,7 +28,7 @@ program
   .option('--endpoint <url>', 'Override stored endpoint');
 
 // Add commands
-program.addCommand(createAuthCommand());
+program.addCommand(createAuthCommand(getGlobalOpts));
 program.addCommand(createTeamCommand(getGlobalOpts));
 program.addCommand(createCollectionCommand(getGlobalOpts));
 program.addCommand(createRequestCommand(getGlobalOpts));

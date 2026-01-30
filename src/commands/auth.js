@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { readAuth, writeAuth, readDefaults, writeDefaults, clearConfig, getConfigPaths } from '../utils/config.js';
 import { success, error } from '../utils/output.js';
 
-export function createAuthCommand() {
+export function createAuthCommand(getGlobalOpts = () => ({})) {
   const auth = new Command('auth')
     .description('Manage authentication and configuration');
 
@@ -45,9 +45,27 @@ export function createAuthCommand() {
     .command('status')
     .description('Show current configuration')
     .action(() => {
+      const globalOpts = getGlobalOpts();
       const authConfig = readAuth();
       const defaults = readDefaults();
       const paths = getConfigPaths();
+      const ready = authConfig.endpoint && authConfig.cookie;
+
+      if (globalOpts.json) {
+        console.log(JSON.stringify({
+          endpoint: authConfig.endpoint || null,
+          cookie: authConfig.cookie ? '[set]' : null,
+          cookieLength: authConfig.cookie ? authConfig.cookie.length : 0,
+          configFile: paths.AUTH_FILE,
+          defaults: {
+            teamId: defaults.teamId || null,
+            collectionId: defaults.collectionId || null
+          },
+          defaultsFile: paths.DEFAULTS_FILE,
+          status: ready ? 'Ready' : 'Not configured'
+        }, null, 2));
+        return;
+      }
 
       console.log('Configuration:');
       console.log(`  Endpoint:    ${authConfig.endpoint || '(not set)'}`);
@@ -60,7 +78,6 @@ export function createAuthCommand() {
       console.log(`  Config file:   ${paths.DEFAULTS_FILE}`);
       console.log('');
 
-      const ready = authConfig.endpoint && authConfig.cookie;
       console.log(`Status: ${ready ? 'Ready' : 'Not configured'}`);
     });
 
