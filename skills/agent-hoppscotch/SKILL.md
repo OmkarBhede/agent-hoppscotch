@@ -1,94 +1,98 @@
 ---
 name: agent-hoppscotch
 description: CLI tool for managing Hoppscotch API documentation. Use when user asks to document API, add API to Hoppscotch, update API docs, or manage API collections.
-allowed-tools: Bash(agent-hoppscotch:*)
+allowed-tools: Bash(agent-hoppscotch:*), AskUserQuestion
 ---
 
-# agent-hoppscotch CLI
+# Hoppscotch API Documentation with agent-hoppscotch
 
-CLI for AI agents to interact with Hoppscotch GraphQL API.
+## Core workflow
 
-## Installation
+1. **Check config**: `agent-hoppscotch auth status`
+2. **If not configured**, ask user for:
+   - Hoppscotch GraphQL endpoint URL
+   - Session cookie (from browser DevTools → Application → Cookies)
+3. **Configure**: Set endpoint, cookie, and defaults
+4. **Work**: Create/update collections and requests
+
+## Configuration (only if status shows "Not configured")
 
 ```bash
-cd agent-hoppscotch && npm install
-# For global access:
-npm link
-```
+# Step 1: Set endpoint (ask user for their Hoppscotch URL)
+agent-hoppscotch auth set-endpoint "<user_provided_url>/graphql"
 
-## Quick Start
+# Step 2: Set cookie (ask user to copy from browser)
+agent-hoppscotch auth set-cookie "<cookie_string>"
 
-```bash
-# Setup (one-time)
-agent-hoppscotch auth set-endpoint "http://hoppscotch.local:3170/graphql"
-agent-hoppscotch auth set-cookie "<cookie_from_browser>"
-agent-hoppscotch auth set-default --team <teamId> --collection <collectionId>
-
-# Basic workflow
+# Step 3: List teams and ask user to select
 agent-hoppscotch team list
-agent-hoppscotch collection list --team <id>
-agent-hoppscotch request create --title "..." --method POST --url "..."
+agent-hoppscotch auth set-default --team <selected_team_id>
+
+# Step 4: List collections and ask user to select default
+agent-hoppscotch collection list
+agent-hoppscotch auth set-default --collection <selected_collection_id>
 ```
 
 ## Commands
 
 ### Auth
 ```bash
-agent-hoppscotch auth set-cookie "<cookie>"    # Store session cookie
-agent-hoppscotch auth set-endpoint "<url>"     # Store GraphQL endpoint
+agent-hoppscotch auth status                        # Show configuration
+agent-hoppscotch auth set-endpoint "<url>"          # Set GraphQL endpoint
+agent-hoppscotch auth set-cookie "<cookie>"         # Set session cookie
 agent-hoppscotch auth set-default --team <id> --collection <id>  # Set defaults
-agent-hoppscotch auth status                   # Show configuration
-agent-hoppscotch auth clear                    # Remove credentials
+agent-hoppscotch auth clear                         # Remove all credentials
 ```
 
 ### Team
 ```bash
-agent-hoppscotch team list                     # List all teams
-agent-hoppscotch team find "<term>"            # Search by name
-agent-hoppscotch team get <teamId>             # Get details
+agent-hoppscotch team list                          # List all teams
+agent-hoppscotch team find "<term>"                 # Search by name
+agent-hoppscotch team get <id>                      # Get team details
 ```
 
 ### Collection
 ```bash
-agent-hoppscotch collection list --team <id>   # List root collections
-agent-hoppscotch collection list --parent <id> # List child collections
-agent-hoppscotch collection find "<term>" --team <id>  # Search by title
-agent-hoppscotch collection get <id>           # Get details
-agent-hoppscotch collection create --team <id> --title "..."  # Create root
-agent-hoppscotch collection create --parent <id> --title "..." # Create child
-agent-hoppscotch collection delete <id>        # Delete
-agent-hoppscotch collection export --team <id> # Export as JSON
+agent-hoppscotch collection list                    # List root collections (uses default team)
+agent-hoppscotch collection list --team <id>        # List for specific team
+agent-hoppscotch collection list --parent <id>      # List child collections
+agent-hoppscotch collection find "<term>"           # Search (includes children)
+agent-hoppscotch collection get <id>                # Get collection details
+agent-hoppscotch collection create --title "..." [--team <id> | --parent <id>]
+agent-hoppscotch collection delete <id>
+agent-hoppscotch collection export --team <id>      # Export as JSON
 ```
 
 ### Request
 ```bash
-agent-hoppscotch request list --collection <id>  # List requests
-agent-hoppscotch request find "<term>" --team <id>  # Search by title
-agent-hoppscotch request get <id>              # Get details
+agent-hoppscotch request list                       # List (uses default collection)
+agent-hoppscotch request list --collection <id>     # List for specific collection
+agent-hoppscotch request find "<term>"              # Search by title
+agent-hoppscotch request get <id>                   # Get request details
 agent-hoppscotch request create \
-  --collection <id> --team <id> \
-  --title "..." --method POST --url "..." \
-  [--headers '<json>'] [--body '<json>'] \
-  [--auth-type bearer] [--auth-token "..."]
-agent-hoppscotch request update <id> [--title "..."] [--method ...] [--url "..."]
-agent-hoppscotch request delete <id>           # Delete
-agent-hoppscotch request move <id> --to <collectionId>  # Move
+  --title "..." --method GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS \
+  --url "..." [--collection <id>] [--team <id>] \
+  [--headers '<json>'] [--body '<json>'] [--body-type application/json|form-data|none] \
+  [--params '<json>'] [--auth-type bearer|basic|none] [--auth-token "..."]
+agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] [--auth-type] [--auth-token]
+agent-hoppscotch request delete <id>
+agent-hoppscotch request move <id> --to <collectionId>
 ```
 
 ### Environment
 ```bash
-agent-hoppscotch env list --team <id>          # List environments
-agent-hoppscotch env get <id> --team <id>      # Get details
-agent-hoppscotch env create --team <id> --name "..." --variables '<json>'
+agent-hoppscotch env list --team <id>               # List environments
+agent-hoppscotch env get <id> --team <id>           # Get environment details
+agent-hoppscotch env create --team <id> --name "..." --variables '[{"key":"k","value":"v","secret":false}]'
 agent-hoppscotch env update <id> --team <id> [--name "..."] [--variables '<json>']
-agent-hoppscotch env delete <id>               # Delete
+agent-hoppscotch env delete <id>
 ```
 
 ## Global Flags
 
 | Flag | Description |
 |------|-------------|
-| `--json` | Output as JSON (for parsing) |
+| `--json` | Machine-readable JSON output |
 | `--verbose` | Show raw GraphQL queries/responses |
 | `--cookie <str>` | Override stored cookie |
 | `--endpoint <url>` | Override stored endpoint |
@@ -99,18 +103,6 @@ agent-hoppscotch env delete <id>               # Delete
 |------|---------|
 | 0 | Success |
 | 1 | General error |
-| 2 | Authentication error |
+| 2 | Auth error (not configured/expired) |
 | 3 | Not found |
-| 4 | Validation error (missing args) |
-
-## Help
-
-```bash
-agent-hoppscotch --help
-agent-hoppscotch <command> --help
-agent-hoppscotch <command> <subcommand> --help
-```
-
-## Package Specification
-
-See [PACKAGE_SPEC.md](PACKAGE_SPEC.md) for full implementation details.
+| 4 | Validation error |
