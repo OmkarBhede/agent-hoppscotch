@@ -1,6 +1,6 @@
 {
   "name": "agent-hoppscotch",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "CLI for AI agents to interact with Hoppscotch API - manage teams, collections, requests, and environments",
   "type": "module",
   "bin": {
@@ -14,7 +14,9 @@
     "README.md"
   ],
   "scripts": {
-    "test": "echo \"No tests yet\""
+    "test": "echo \"No tests yet\"",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "prepare": "husky"
   },
   "keywords": [
     "hoppscotch",
@@ -41,5 +43,8 @@
   "bugs": {
     "url": "https://github.com/OmkarBhede/agent-hoppscotch/issues"
   },
-  "homepage": "https://github.com/OmkarBhede/agent-hoppscotch#readme"
+  "homepage": "https://github.com/OmkarBhede/agent-hoppscotch#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
 }

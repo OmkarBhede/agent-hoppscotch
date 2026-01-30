@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Bump patch version
+npm version patch --no-git-tag-version
+
+# Stage the updated package.json and package-lock.json
+git add package.json package-lock.json
