@@ -47,6 +47,10 @@ export function createEnvCommand(globalOpts) {
       if (opts.json) {
         output(envs, { json: true });
       } else {
+        if (envs.length === 0) {
+          console.log('No environments found in this team.');
+          return;
+        }
         const rows = envs.map(e => {
           const vars = parseVariables(e.variables);
           return {
