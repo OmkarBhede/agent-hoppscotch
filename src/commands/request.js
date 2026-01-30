@@ -45,6 +45,10 @@ function parseRequestJson(requestStr) {
   }
 }
 
+const VALID_HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
+const VALID_AUTH_TYPES = ['bearer', 'basic', 'none'];
+const VALID_BODY_TYPES = ['application/json', 'multipart/form-data', 'application/x-www-form-urlencoded', 'text/plain', 'none'];
+
 export function createRequestCommand(globalOpts) {
   const request = new Command('request')
     .description('Manage Hoppscotch API requests');
@@ -59,16 +63,21 @@ export function createRequestCommand(globalOpts) {
       const collectionId = cmdOpts.collection || config.collectionId;
 
       if (!collectionId) {
-        error('--collection required');
+        error('--collection required (or set default: agent-hoppscotch auth set-default --collection <id>)');
         process.exit(4);
       }
 
       const data = await graphqlRequest(REQUESTS_IN_COLLECTION, { collectionID: collectionId }, opts);
+      const requests = data.requestsInCollection || [];
 
       if (opts.json) {
-        output(data.requestsInCollection, { json: true });
+        output(requests, { json: true });
       } else {
-        const rows = data.requestsInCollection.map(r => {
+        if (requests.length === 0) {
+          console.log('No requests found in this collection.');
+          return;
+        }
+        const rows = requests.map(r => {
           const req = parseRequestJson(r.request);
           return {
             id: r.id,
@@ -191,6 +200,24 @@ export function createRequestCommand(globalOpts) {
       }
       if (!cmdOpts.url) {
         error('--url required');
+        process.exit(4);
+      }
+
+      // Validate HTTP method
+      if (!VALID_HTTP_METHODS.includes(cmdOpts.method.toUpperCase())) {
+        error(`Invalid HTTP method "${cmdOpts.method}". Must be one of: ${VALID_HTTP_METHODS.join(', ')}`);
+        process.exit(4);
+      }
+
+      // Validate auth type if provided
+      if (cmdOpts.authType && !VALID_AUTH_TYPES.includes(cmdOpts.authType.toLowerCase())) {
+        error(`Invalid auth type "${cmdOpts.authType}". Must be one of: ${VALID_AUTH_TYPES.join(', ')}`);
+        process.exit(4);
+      }
+
+      // Validate body type if provided
+      if (cmdOpts.bodyType && !VALID_BODY_TYPES.includes(cmdOpts.bodyType)) {
+        error(`Invalid body type "${cmdOpts.bodyType}". Must be one of: ${VALID_BODY_TYPES.join(', ')}`);
         process.exit(4);
       }
 
