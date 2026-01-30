@@ -40,14 +40,28 @@ export async function graphqlRequest(query, variables = {}, opts = {}) {
     console.error('------------------------\n');
   }
 
-  const response = await fetch(config.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Cookie': config.cookie
-    },
-    body: JSON.stringify({ query, variables })
-  });
+  let response;
+  try {
+    response = await fetch(config.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': config.cookie
+      },
+      body: JSON.stringify({ query, variables })
+    });
+  } catch (fetchError) {
+    const cause = fetchError.cause;
+    if (cause?.code === 'ENOTFOUND') {
+      throw new Error(`Cannot resolve host for endpoint: ${config.endpoint}`);
+    } else if (cause?.code === 'ECONNREFUSED') {
+      throw new Error(`Connection refused to endpoint: ${config.endpoint}`);
+    } else if (cause?.code === 'ETIMEDOUT' || cause?.code === 'ENETUNREACH') {
+      throw new Error(`Connection timed out to endpoint: ${config.endpoint}`);
+    } else {
+      throw new Error(`Failed to connect to endpoint: ${config.endpoint}\nCause: ${fetchError.message}`);
+    }
+  }
 
   const data = await response.json();
 
