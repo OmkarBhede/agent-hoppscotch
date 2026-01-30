@@ -61,7 +61,7 @@ export function createCollectionCommand(globalOpts) {
 
   collection
     .command('find <term>')
-    .description('Search collections by title')
+    .description('Search collections by title (searches all collections including nested)')
     .option('--team <id>', 'Team ID')
     .action(async (term, cmdOpts) => {
       const opts = globalOpts();
@@ -73,10 +73,26 @@ export function createCollectionCommand(globalOpts) {
         process.exit(4);
       }
 
+      // Recursive function to search all collections
+      async function searchCollections(collections, parentPath = '') {
+        let results = [];
+        for (const c of collections) {
+          const path = parentPath ? `${parentPath} > ${c.title}` : c.title;
+          if (c.title.toLowerCase().includes(term.toLowerCase())) {
+            results.push({ ...c, path });
+          }
+          // Fetch children and search recursively
+          const childData = await graphqlRequest(COLLECTION, { collectionID: c.id }, opts);
+          if (childData.collection?.children?.length > 0) {
+            const childResults = await searchCollections(childData.collection.children, path);
+            results = results.concat(childResults);
+          }
+        }
+        return results;
+      }
+
       const data = await graphqlRequest(ROOT_COLLECTIONS_OF_TEAM, { teamID: teamId }, opts);
-      const filtered = data.rootCollectionsOfTeam.filter(c =>
-        c.title.toLowerCase().includes(term.toLowerCase())
-      );
+      const filtered = await searchCollections(data.rootCollectionsOfTeam);
 
       if (opts.json) {
         output(filtered, { json: true });
@@ -86,7 +102,7 @@ export function createCollectionCommand(globalOpts) {
         } else {
           console.log(`Found ${filtered.length} collection(s) matching "${term}":`);
           filtered.forEach(c => {
-            console.log(`  ${c.id} │ ${c.title}`);
+            console.log(`  ${c.id} │ ${c.path}`);
           });
         }
       }
