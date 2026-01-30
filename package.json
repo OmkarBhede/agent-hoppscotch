@@ -1,0 +1,45 @@
+{
+  "name": "agent-hoppscotch",
+  "version": "1.0.0",
+  "description": "CLI for AI agents to interact with Hoppscotch API - manage teams, collections, requests, and environments",
+  "type": "module",
+  "bin": {
+    "agent-hoppscotch": "./bin/agent-hoppscotch.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "hoppscotch",
+    "api",
+    "cli",
+    "ai-agent",
+    "claude-code",
+    "api-documentation",
+    "graphql",
+    "rest-api"
+  ],
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Omkar Bhede",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OmkarBhede/agent-hoppscotch"
+  },
+  "bugs": {
+    "url": "https://github.com/OmkarBhede/agent-hoppscotch/issues"
+  },
+  "homepage": "https://github.com/OmkarBhede/agent-hoppscotch#readme"
+}
