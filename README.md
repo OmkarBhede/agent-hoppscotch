@@ -134,6 +134,11 @@ Credentials are stored in `~/.hoppscotch/`:
 2. Open DevTools (F12) → Application → Cookies
 3. Copy the cookie string containing `connect.sid`, `access_token`, and `refresh_token`
 
+**Example cookie format:**
+```
+connect.sid=s%3ATu1_ApriD6v5EvbUe64j8SYWU8XDm31k.5KTQZL28tskTc3mJV3hn4CnMhS1HZBq9VAah4YorJLE; access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vaG9wcHNjb3RjaC5sb2NhbDozMDAwIiwic3ViIjoiY21reXp0bnRyMDAwMDB0bzFkMTQ1OWJsMSIsImF1ZCI6WyJodHRwOi8vaG9wcHNjb3RjaC5sb2NhbDozMDAwIl0sImlhdCI6MTc2OTY2NDk2NSwiZXhwIjoxNzc4MzA0OTY1fQ.az2nOwCCgIBDrgISIPYRgF4rhvrJevKlGvpz_yPvAlQ; refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vaG9wcHNjb3RjaC5sb2NhbDozMDAwIiwic3ViIjoiY21reXp0bnRyMDAwMDB0bzFkMTQ1OWJsMSIsImF1ZCI6WyJodHRwOi8vaG9wcHNjb3RjaC5sb2NhbDozMDAwIl0sImlhdCI6MTc2OTY2NDk2NSwiZXhwIjoxODMwMTQ0OTY1fQ.XXv3mtI1zwYUGaNHo7T6bNt3D5UJUmnmTJAl3uyZ1MA
+```
+
 ## Use with AI Agents
 
 This CLI is designed for AI coding assistants like Claude Code. Instead of loading verbose GraphQL documentation, agents can use simple CLI commands:
