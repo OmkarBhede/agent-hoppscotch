@@ -14,6 +14,58 @@ import {
   MOVE_REQUEST
 } from '../graphql/mutations.js';
 
+function buildAuthObject(options) {
+  const authType = options.authType || "none";
+  const authActive = authType !== "none";
+
+  switch (authType) {
+    case "api-key":
+      return {
+        authType: "api-key",
+        authActive,
+        key: options.authKey || "",
+        value: options.authValue || "",
+        addTo: options.authAddTo || "header"
+      };
+    case "oauth2":
+      return {
+        authType: "oauth-2",
+        authActive,
+        grantTypeInfo: {
+          grantType: (options.oauthGrantType || "client_credentials").toUpperCase().replace(/-/g, "_"),
+          authEndpoint: "",
+          tokenEndpoint: options.oauthTokenUrl || "",
+          clientID: options.oauthClientId || "",
+          clientSecret: options.oauthClientSecret || "",
+          scopes: options.oauthScope || ""
+        }
+      };
+    case "inherit":
+      return {
+        authType: "inherit",
+        authActive: true
+      };
+    case "bearer":
+      return {
+        authType: "bearer",
+        authActive,
+        token: options.authToken || ""
+      };
+    case "basic":
+      return {
+        authType: "basic",
+        authActive,
+        username: options.authUsername || "",
+        password: options.authPassword || ""
+      };
+    default:
+      return {
+        authType: "none",
+        authActive: false
+      };
+  }
+}
+
 function buildRequestBody(options) {
   return JSON.stringify({
     v: "5",
@@ -26,11 +78,7 @@ function buildRequestBody(options) {
       contentType: options.bodyType || "application/json",
       body: options.body || ""
     },
-    auth: {
-      authType: options.authType || "none",
-      authActive: options.authType && options.authType !== "none",
-      token: options.authToken || ""
-    },
+    auth: buildAuthObject(options),
     preRequestScript: "",
     testScript: "",
     requestVariables: []
@@ -46,7 +94,7 @@ function parseRequestJson(requestStr) {
 }
 
 const VALID_HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
-const VALID_AUTH_TYPES = ['bearer', 'basic', 'none'];
+const VALID_AUTH_TYPES = ['bearer', 'basic', 'api-key', 'oauth2', 'inherit', 'none'];
 const VALID_BODY_TYPES = ['application/json', 'multipart/form-data', 'application/x-www-form-urlencoded', 'text/plain', 'none'];
 
 export function createRequestCommand(globalOpts) {
@@ -174,8 +222,18 @@ export function createRequestCommand(globalOpts) {
     .option('--headers <json>', 'Headers JSON array')
     .option('--body <json>', 'Request body')
     .option('--body-type <type>', 'Content type (application/json, multipart/form-data, application/x-www-form-urlencoded, text/plain, none)')
-    .option('--auth-type <type>', 'Auth type (bearer, basic, none)')
-    .option('--auth-token <token>', 'Auth token')
+    .option('--auth-type <type>', 'Auth type (bearer, basic, api-key, oauth2, inherit, none)')
+    .option('--auth-token <token>', 'Auth token (for bearer)')
+    .option('--auth-username <username>', 'Username (for basic)')
+    .option('--auth-password <password>', 'Password (for basic)')
+    .option('--auth-key <key>', 'API key name (for api-key)')
+    .option('--auth-value <value>', 'API key value (for api-key)')
+    .option('--auth-add-to <location>', 'Where to add API key: header or query (for api-key)')
+    .option('--oauth-grant-type <type>', 'OAuth grant type: client_credentials, authorization_code, etc.')
+    .option('--oauth-token-url <url>', 'OAuth token endpoint URL')
+    .option('--oauth-client-id <id>', 'OAuth client ID')
+    .option('--oauth-client-secret <secret>', 'OAuth client secret')
+    .option('--oauth-scope <scope>', 'OAuth scopes (space-separated)')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
@@ -264,8 +322,18 @@ export function createRequestCommand(globalOpts) {
     .option('--headers <json>', 'Headers JSON array')
     .option('--body <json>', 'Request body')
     .option('--body-type <type>', 'Content type')
-    .option('--auth-type <type>', 'Auth type')
-    .option('--auth-token <token>', 'Auth token')
+    .option('--auth-type <type>', 'Auth type (bearer, basic, api-key, oauth2, inherit, none)')
+    .option('--auth-token <token>', 'Auth token (for bearer)')
+    .option('--auth-username <username>', 'Username (for basic)')
+    .option('--auth-password <password>', 'Password (for basic)')
+    .option('--auth-key <key>', 'API key name (for api-key)')
+    .option('--auth-value <value>', 'API key value (for api-key)')
+    .option('--auth-add-to <location>', 'Where to add API key: header or query (for api-key)')
+    .option('--oauth-grant-type <type>', 'OAuth grant type')
+    .option('--oauth-token-url <url>', 'OAuth token endpoint URL')
+    .option('--oauth-client-id <id>', 'OAuth client ID')
+    .option('--oauth-client-secret <secret>', 'OAuth client secret')
+    .option('--oauth-scope <scope>', 'OAuth scopes')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
@@ -289,7 +357,17 @@ export function createRequestCommand(globalOpts) {
         body: cmdOpts.body || currentReq.body?.body,
         bodyType: cmdOpts.bodyType || currentReq.body?.contentType,
         authType: cmdOpts.authType || currentReq.auth?.authType,
-        authToken: cmdOpts.authToken || currentReq.auth?.token
+        authToken: cmdOpts.authToken || currentReq.auth?.token,
+        authUsername: cmdOpts.authUsername || currentReq.auth?.username,
+        authPassword: cmdOpts.authPassword || currentReq.auth?.password,
+        authKey: cmdOpts.authKey || currentReq.auth?.key,
+        authValue: cmdOpts.authValue || currentReq.auth?.value,
+        authAddTo: cmdOpts.authAddTo || currentReq.auth?.addTo,
+        oauthGrantType: cmdOpts.oauthGrantType || currentReq.auth?.grantTypeInfo?.grantType,
+        oauthTokenUrl: cmdOpts.oauthTokenUrl || currentReq.auth?.grantTypeInfo?.tokenEndpoint,
+        oauthClientId: cmdOpts.oauthClientId || currentReq.auth?.grantTypeInfo?.clientID,
+        oauthClientSecret: cmdOpts.oauthClientSecret || currentReq.auth?.grantTypeInfo?.clientSecret,
+        oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes
       };
 
       // Validate JSON body if requested

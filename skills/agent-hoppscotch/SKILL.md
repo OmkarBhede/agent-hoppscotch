@@ -73,8 +73,17 @@ agent-hoppscotch request create \
   --title "..." --method GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS \
   --url "..." [--collection <id>] [--team <id>] \
   [--headers '<json>'] [--body '<json>'] [--body-type application/json|multipart/form-data|application/x-www-form-urlencoded|text/plain|none] \
-  [--params '<json>'] [--auth-type bearer|basic|none] [--auth-token "..."] [--validate-body]
-agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] [--auth-type] [--auth-token] [--validate-body]
+  [--params '<json>'] [--auth-type bearer|basic|api-key|oauth2|inherit|none] \
+  [--auth-token "..."] [--auth-username "..."] [--auth-password "..."] \
+  [--auth-key "..."] [--auth-value "..."] [--auth-add-to header|query] \
+  [--oauth-grant-type client_credentials|authorization_code] [--oauth-token-url "..."] \
+  [--oauth-client-id "..."] [--oauth-client-secret "..."] [--oauth-scope "..."] \
+  [--validate-body]
+agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] \
+  [--auth-type] [--auth-token] [--auth-username] [--auth-password] \
+  [--auth-key] [--auth-value] [--auth-add-to] \
+  [--oauth-grant-type] [--oauth-token-url] [--oauth-client-id] [--oauth-client-secret] [--oauth-scope] \
+  [--validate-body]
 agent-hoppscotch request delete <id>
 agent-hoppscotch request move <id> --to <collectionId>
 ```
