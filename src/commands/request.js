@@ -173,7 +173,7 @@ export function createRequestCommand(globalOpts) {
     .option('--params <json>', 'Query params JSON array')
     .option('--headers <json>', 'Headers JSON array')
     .option('--body <json>', 'Request body')
-    .option('--body-type <type>', 'Content type (application/json, form-data, none)')
+    .option('--body-type <type>', 'Content type (application/json, multipart/form-data, application/x-www-form-urlencoded, text/plain, none)')
     .option('--auth-type <type>', 'Auth type (bearer, basic, none)')
     .option('--auth-token <token>', 'Auth token')
     .action(async (cmdOpts) => {
