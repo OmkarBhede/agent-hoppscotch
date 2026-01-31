@@ -106,6 +106,18 @@ agent-hoppscotch graphql update <id> [--title] [--url] [--query] [--query-file] 
 agent-hoppscotch graphql delete <id>
 ```
 
+### Realtime (WebSocket, SSE, Socket.IO, MQTT)
+```bash
+agent-hoppscotch realtime list --collection <id> [--type websocket|sse|socketio|mqtt]
+agent-hoppscotch realtime get <id>
+agent-hoppscotch realtime create --type websocket --title "..." --url "wss://..." [--protocols '["proto"]'] [--headers '<json>']
+agent-hoppscotch realtime create --type sse --title "..." --url "https://..." [--headers '<json>']
+agent-hoppscotch realtime create --type socketio --title "..." --url "https://..." [--path '/socket.io'] [--version '4']
+agent-hoppscotch realtime create --type mqtt --title "..." --url "mqtt://..." [--topic '...'] [--qos 0|1|2] [--client-id '...']
+agent-hoppscotch realtime update <id> [--title] [--url] [--headers] [--protocols] [--path] [--topic] [--qos] [--client-id]
+agent-hoppscotch realtime delete <id>
+```
+
 ### Environment
 ```bash
 agent-hoppscotch env list --team <id>               # List environments
