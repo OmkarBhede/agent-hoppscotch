@@ -79,13 +79,13 @@ agent-hoppscotch request create \
   [--oauth-grant-type client_credentials|authorization_code] [--oauth-token-url "..."] \
   [--oauth-client-id "..."] [--oauth-client-secret "..."] [--oauth-scope "..."] \
   [--pre-request-script '<js>'] [--pre-request-script-file <path>] \
-  [--test-script '<js>'] [--test-script-file <path>] [--validate-body]
+  [--test-script '<js>'] [--test-script-file <path>] [--variables '<json>'] [--validate-body]
 agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] \
   [--auth-type] [--auth-token] [--auth-username] [--auth-password] \
   [--auth-key] [--auth-value] [--auth-add-to] \
   [--oauth-grant-type] [--oauth-token-url] [--oauth-client-id] [--oauth-client-secret] [--oauth-scope] \
   [--pre-request-script '<js>'] [--pre-request-script-file <path>] \
-  [--test-script '<js>'] [--test-script-file <path>] [--validate-body]
+  [--test-script '<js>'] [--test-script-file <path>] [--variables '<json>'] [--validate-body]
 agent-hoppscotch request delete <id>
 agent-hoppscotch request move <id> --to <collectionId>
 ```

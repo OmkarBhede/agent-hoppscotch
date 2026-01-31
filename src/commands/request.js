@@ -82,7 +82,7 @@ function buildRequestBody(options) {
     auth: buildAuthObject(options),
     preRequestScript: options.preRequestScript || "",
     testScript: options.testScript || "",
-    requestVariables: []
+    requestVariables: options.variables ? JSON.parse(options.variables) : []
   });
 }
 
@@ -239,6 +239,7 @@ export function createRequestCommand(globalOpts) {
     .option('--pre-request-script-file <path>', 'Path to pre-request script file')
     .option('--test-script <script>', 'Test script JavaScript code (runs after response)')
     .option('--test-script-file <path>', 'Path to test script file')
+    .option('--variables <json>', 'Request-level variables JSON array')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
@@ -363,6 +364,7 @@ export function createRequestCommand(globalOpts) {
     .option('--pre-request-script-file <path>', 'Path to pre-request script file')
     .option('--test-script <script>', 'Test script JavaScript code')
     .option('--test-script-file <path>', 'Path to test script file')
+    .option('--variables <json>', 'Request-level variables JSON array')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
@@ -398,7 +400,8 @@ export function createRequestCommand(globalOpts) {
         oauthClientSecret: cmdOpts.oauthClientSecret || currentReq.auth?.grantTypeInfo?.clientSecret,
         oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes,
         preRequestScript: cmdOpts.preRequestScript || currentReq.preRequestScript,
-        testScript: cmdOpts.testScript || currentReq.testScript
+        testScript: cmdOpts.testScript || currentReq.testScript,
+        variables: cmdOpts.variables || JSON.stringify(currentReq.requestVariables || [])
       };
 
       // Handle pre-request script from file
