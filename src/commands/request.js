@@ -85,13 +85,34 @@ function buildBodyObject(options) {
   return { contentType, body: options.body || "" };
 }
 
+function parseHeaders(headersJson) {
+  if (!headersJson) return [];
+  const parsed = JSON.parse(headersJson);
+
+  // If array format, ensure each item has active field
+  if (Array.isArray(parsed)) {
+    return parsed.map(h => ({
+      key: h.key,
+      value: h.value,
+      active: h.active !== false
+    }));
+  }
+
+  // If object format, convert to array (all active)
+  return Object.entries(parsed).map(([key, value]) => ({
+    key,
+    value,
+    active: true
+  }));
+}
+
 function buildRequestBody(options) {
   return JSON.stringify({
     v: "5",
     name: options.title,
     endpoint: options.url || options.endpoint || "",
     method: options.method || "GET",
-    headers: options.headers ? JSON.parse(options.headers) : [],
+    headers: parseHeaders(options.headers),
     params: options.params ? JSON.parse(options.params) : [],
     body: buildBodyObject(options),
     auth: buildAuthObject(options),

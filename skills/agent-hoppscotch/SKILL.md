@@ -72,7 +72,7 @@ agent-hoppscotch request get <id>                   # Get request details
 agent-hoppscotch request create \
   --title "..." --method GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS \
   --url "..." [--collection <id>] [--team <id>] \
-  [--headers '<json>'] [--body '<json>'] [--body-type application/json|multipart/form-data|application/x-www-form-urlencoded|text/plain|none] \
+  [--headers '<json or array>'] [--body '<json>'] [--body-type application/json|multipart/form-data|application/x-www-form-urlencoded|text/plain|none] \
   [--form '[{"key":"k","value":"v","isFile":false}]'] \
   [--params '<json>'] [--auth-type bearer|basic|api-key|oauth2|inherit|none] \
   [--auth-token "..."] [--auth-username "..."] [--auth-password "..."] \
