@@ -176,6 +176,7 @@ export function createRequestCommand(globalOpts) {
     .option('--body-type <type>', 'Content type (application/json, multipart/form-data, application/x-www-form-urlencoded, text/plain, none)')
     .option('--auth-type <type>', 'Auth type (bearer, basic, none)')
     .option('--auth-token <token>', 'Auth token')
+    .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
       const config = getConfig(opts);
@@ -221,6 +222,19 @@ export function createRequestCommand(globalOpts) {
         process.exit(4);
       }
 
+      // Validate JSON body if requested
+      if (cmdOpts.validateBody && cmdOpts.body) {
+        const bodyType = cmdOpts.bodyType || 'application/json';
+        if (bodyType === 'application/json') {
+          try {
+            JSON.parse(cmdOpts.body);
+          } catch (e) {
+            error(`Invalid JSON body: ${e.message}`);
+            process.exit(4);
+          }
+        }
+      }
+
       const requestJson = buildRequestBody(cmdOpts);
 
       const data = await graphqlRequest(CREATE_REQUEST_IN_COLLECTION, {
@@ -252,6 +266,7 @@ export function createRequestCommand(globalOpts) {
     .option('--body-type <type>', 'Content type')
     .option('--auth-type <type>', 'Auth type')
     .option('--auth-token <token>', 'Auth token')
+    .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
 
@@ -276,6 +291,19 @@ export function createRequestCommand(globalOpts) {
         authType: cmdOpts.authType || currentReq.auth?.authType,
         authToken: cmdOpts.authToken || currentReq.auth?.token
       };
+
+      // Validate JSON body if requested
+      if (cmdOpts.validateBody && cmdOpts.body) {
+        const bodyType = updatedOptions.bodyType || 'application/json';
+        if (bodyType === 'application/json') {
+          try {
+            JSON.parse(cmdOpts.body);
+          } catch (e) {
+            error(`Invalid JSON body: ${e.message}`);
+            process.exit(4);
+          }
+        }
+      }
 
       const requestJson = buildRequestBody(updatedOptions);
 

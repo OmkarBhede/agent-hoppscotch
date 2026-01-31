@@ -73,8 +73,8 @@ agent-hoppscotch request create \
   --title "..." --method GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS \
   --url "..." [--collection <id>] [--team <id>] \
   [--headers '<json>'] [--body '<json>'] [--body-type application/json|multipart/form-data|application/x-www-form-urlencoded|text/plain|none] \
-  [--params '<json>'] [--auth-type bearer|basic|none] [--auth-token "..."]
-agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] [--auth-type] [--auth-token]
+  [--params '<json>'] [--auth-type bearer|basic|none] [--auth-token "..."] [--validate-body]
+agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] [--auth-type] [--auth-token] [--validate-body]
 agent-hoppscotch request delete <id>
 agent-hoppscotch request move <id> --to <collectionId>
 ```
