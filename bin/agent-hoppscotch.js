@@ -6,6 +6,7 @@ import { createTeamCommand } from '../src/commands/team.js';
 import { createCollectionCommand } from '../src/commands/collection.js';
 import { createRequestCommand } from '../src/commands/request.js';
 import { createEnvCommand } from '../src/commands/env.js';
+import { createGraphqlCommand } from '../src/commands/graphql.js';
 import { AuthError, GraphQLError, NotFoundError } from '../src/utils/client.js';
 
 // Global options getter
@@ -33,6 +34,7 @@ program.addCommand(createTeamCommand(getGlobalOpts));
 program.addCommand(createCollectionCommand(getGlobalOpts));
 program.addCommand(createRequestCommand(getGlobalOpts));
 program.addCommand(createEnvCommand(getGlobalOpts));
+program.addCommand(createGraphqlCommand(getGlobalOpts));
 
 // Error handling
 process.on('unhandledRejection', (err) => {

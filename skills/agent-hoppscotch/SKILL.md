@@ -94,6 +94,18 @@ agent-hoppscotch request move <id> --to <collectionId>
 agent-hoppscotch request run <id> [--var key=value] [--body-only] [--status-only] [--include-headers] [--verbose]
 ```
 
+### GraphQL
+```bash
+agent-hoppscotch graphql list --collection <id>    # List GraphQL requests
+agent-hoppscotch graphql get <id>                  # Get request details
+agent-hoppscotch graphql create \
+  --title "..." --url "{{baseUrl}}/graphql" \
+  --query 'query { users { id name } }' [--query-file <path>] \
+  [--variables '<json>'] [--variables-file <path>] [--headers '<json>']
+agent-hoppscotch graphql update <id> [--title] [--url] [--query] [--query-file] [--variables] [--variables-file] [--headers]
+agent-hoppscotch graphql delete <id>
+```
+
 ### Environment
 ```bash
 agent-hoppscotch env list --team <id>               # List environments
