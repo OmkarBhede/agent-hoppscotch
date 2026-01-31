@@ -543,5 +543,159 @@ export function createRequestCommand(globalOpts) {
       }
     });
 
+  request
+    .command('run <requestId>')
+    .description('Execute a request')
+    .option('--var <keyValue>', 'Override variable (key=value)', (val, acc) => {
+      const [key, ...rest] = val.split('=');
+      acc[key] = rest.join('=');
+      return acc;
+    }, {})
+    .option('--body-only', 'Only show response body')
+    .option('--status-only', 'Only show status code')
+    .option('--include-headers', 'Include response headers')
+    .option('--verbose', 'Show detailed output')
+    .action(async (requestId, cmdOpts) => {
+      const opts = globalOpts();
+
+      // Fetch request details
+      const data = await graphqlRequest(REQUEST, { requestID: requestId }, opts);
+      if (!data.request) {
+        error(`Request not found: ${requestId}`);
+        process.exit(3);
+      }
+
+      const reqData = parseRequestJson(data.request.request);
+      if (!reqData) {
+        error('Failed to parse request data');
+        process.exit(1);
+      }
+
+      // Resolve variables
+      let url = reqData.endpoint;
+      let body = reqData.body?.body || '';
+      const vars = cmdOpts.var || {};
+
+      // Replace variables in URL and body
+      for (const [key, value] of Object.entries(vars)) {
+        const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        url = url.replace(pattern, value);
+        if (typeof body === 'string') {
+          body = body.replace(pattern, value);
+        }
+      }
+
+      // Build headers
+      const headers = {};
+      if (Array.isArray(reqData.headers)) {
+        reqData.headers.forEach(h => {
+          if (h.active !== false) {
+            let val = h.value;
+            for (const [key, value] of Object.entries(vars)) {
+              val = val.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+            }
+            headers[h.key] = val;
+          }
+        });
+      }
+
+      // Add auth header
+      if (reqData.auth?.authActive && reqData.auth?.authType === 'bearer') {
+        let token = reqData.auth.token;
+        for (const [key, value] of Object.entries(vars)) {
+          token = token.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+        }
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Build query params
+      const urlObj = new URL(url.startsWith('http') ? url : `http://${url}`);
+      if (Array.isArray(reqData.params)) {
+        reqData.params.forEach(p => {
+          if (p.active !== false) {
+            let val = p.value;
+            for (const [key, value] of Object.entries(vars)) {
+              val = val.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+            }
+            urlObj.searchParams.append(p.key, val);
+          }
+        });
+      }
+
+      // Execute request
+      const startTime = Date.now();
+      try {
+        const fetchOpts = {
+          method: reqData.method,
+          headers
+        };
+
+        if (['POST', 'PUT', 'PATCH'].includes(reqData.method) && body) {
+          fetchOpts.body = body;
+          if (!headers['Content-Type'] && reqData.body?.contentType) {
+            headers['Content-Type'] = reqData.body.contentType;
+          }
+        }
+
+        const response = await fetch(urlObj.toString(), fetchOpts);
+        const responseTime = Date.now() - startTime;
+        const responseBody = await response.text();
+
+        if (opts.json) {
+          output({
+            request: {
+              method: reqData.method,
+              url: urlObj.toString(),
+              headers,
+              body
+            },
+            response: {
+              status: response.status,
+              statusText: response.statusText,
+              headers: Object.fromEntries(response.headers),
+              body: responseBody,
+              time: responseTime
+            }
+          }, { json: true });
+          return;
+        }
+
+        if (cmdOpts.statusOnly) {
+          console.log(response.status);
+          return;
+        }
+
+        if (cmdOpts.bodyOnly) {
+          console.log(responseBody);
+          return;
+        }
+
+        // Standard output
+        console.log(`Request: ${data.request.title}`);
+        console.log(`URL: ${reqData.method} ${urlObj.toString()}`);
+        console.log('');
+        console.log(`Status: ${response.status} ${response.statusText}`);
+        console.log(`Time: ${responseTime}ms`);
+
+        if (cmdOpts.includeHeaders || cmdOpts.verbose) {
+          console.log('\nHeaders:');
+          response.headers.forEach((value, key) => {
+            console.log(`  ${key}: ${value}`);
+          });
+        }
+
+        console.log('\nBody:');
+        try {
+          console.log(JSON.stringify(JSON.parse(responseBody), null, 2));
+        } catch {
+          console.log(responseBody);
+        }
+
+      } catch (e) {
+        error(`Request failed: ${e.message}`);
+        process.exit(1);
+      }
+    });
+
   return request;
 }

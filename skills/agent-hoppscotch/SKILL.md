@@ -89,6 +89,7 @@ agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [-
   [--test-script '<js>'] [--test-script-file <path>] [--variables '<json>'] [--validate-body]
 agent-hoppscotch request delete <id>
 agent-hoppscotch request move <id> --to <collectionId>
+agent-hoppscotch request run <id> [--var key=value] [--body-only] [--status-only] [--include-headers] [--verbose]
 ```
 
 ### Environment
