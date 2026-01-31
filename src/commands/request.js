@@ -106,6 +106,18 @@ function parseHeaders(headersJson) {
   }));
 }
 
+function parseParams(paramsJson) {
+  if (!paramsJson) return [];
+  const parsed = JSON.parse(paramsJson);
+
+  // Ensure each param has active field (default true)
+  return parsed.map(p => ({
+    key: p.key,
+    value: p.value,
+    active: p.active !== false
+  }));
+}
+
 function buildRequestBody(options) {
   return JSON.stringify({
     v: "5",
@@ -113,7 +125,7 @@ function buildRequestBody(options) {
     endpoint: options.url || options.endpoint || "",
     method: options.method || "GET",
     headers: parseHeaders(options.headers),
-    params: options.params ? JSON.parse(options.params) : [],
+    params: parseParams(options.params),
     body: buildBodyObject(options),
     auth: buildAuthObject(options),
     preRequestScript: options.preRequestScript || "",
