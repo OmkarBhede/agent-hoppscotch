@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
 import { graphqlRequest } from '../utils/client.js';
 import { output, success, error } from '../utils/output.js';
 import { getConfig } from '../utils/config.js';
@@ -79,8 +80,8 @@ function buildRequestBody(options) {
       body: options.body || ""
     },
     auth: buildAuthObject(options),
-    preRequestScript: "",
-    testScript: "",
+    preRequestScript: options.preRequestScript || "",
+    testScript: options.testScript || "",
     requestVariables: []
   });
 }
@@ -234,6 +235,8 @@ export function createRequestCommand(globalOpts) {
     .option('--oauth-client-id <id>', 'OAuth client ID')
     .option('--oauth-client-secret <secret>', 'OAuth client secret')
     .option('--oauth-scope <scope>', 'OAuth scopes (space-separated)')
+    .option('--pre-request-script <script>', 'Pre-request JavaScript code')
+    .option('--pre-request-script-file <path>', 'Path to pre-request script file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
@@ -293,6 +296,16 @@ export function createRequestCommand(globalOpts) {
         }
       }
 
+      // Handle pre-request script from file
+      if (cmdOpts.preRequestScriptFile && !cmdOpts.preRequestScript) {
+        try {
+          cmdOpts.preRequestScript = readFileSync(cmdOpts.preRequestScriptFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read pre-request script file: ${e.message}`);
+          process.exit(4);
+        }
+      }
+
       const requestJson = buildRequestBody(cmdOpts);
 
       const data = await graphqlRequest(CREATE_REQUEST_IN_COLLECTION, {
@@ -334,6 +347,8 @@ export function createRequestCommand(globalOpts) {
     .option('--oauth-client-id <id>', 'OAuth client ID')
     .option('--oauth-client-secret <secret>', 'OAuth client secret')
     .option('--oauth-scope <scope>', 'OAuth scopes')
+    .option('--pre-request-script <script>', 'Pre-request JavaScript code')
+    .option('--pre-request-script-file <path>', 'Path to pre-request script file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
@@ -367,8 +382,19 @@ export function createRequestCommand(globalOpts) {
         oauthTokenUrl: cmdOpts.oauthTokenUrl || currentReq.auth?.grantTypeInfo?.tokenEndpoint,
         oauthClientId: cmdOpts.oauthClientId || currentReq.auth?.grantTypeInfo?.clientID,
         oauthClientSecret: cmdOpts.oauthClientSecret || currentReq.auth?.grantTypeInfo?.clientSecret,
-        oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes
+        oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes,
+        preRequestScript: cmdOpts.preRequestScript || currentReq.preRequestScript
       };
+
+      // Handle pre-request script from file
+      if (cmdOpts.preRequestScriptFile && !cmdOpts.preRequestScript) {
+        try {
+          updatedOptions.preRequestScript = readFileSync(cmdOpts.preRequestScriptFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read pre-request script file: ${e.message}`);
+          process.exit(4);
+        }
+      }
 
       // Validate JSON body if requested
       if (cmdOpts.validateBody && cmdOpts.body) {
