@@ -237,6 +237,8 @@ export function createRequestCommand(globalOpts) {
     .option('--oauth-scope <scope>', 'OAuth scopes (space-separated)')
     .option('--pre-request-script <script>', 'Pre-request JavaScript code')
     .option('--pre-request-script-file <path>', 'Path to pre-request script file')
+    .option('--test-script <script>', 'Test script JavaScript code (runs after response)')
+    .option('--test-script-file <path>', 'Path to test script file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
@@ -306,6 +308,16 @@ export function createRequestCommand(globalOpts) {
         }
       }
 
+      // Handle test script from file
+      if (cmdOpts.testScriptFile && !cmdOpts.testScript) {
+        try {
+          cmdOpts.testScript = readFileSync(cmdOpts.testScriptFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read test script file: ${e.message}`);
+          process.exit(4);
+        }
+      }
+
       const requestJson = buildRequestBody(cmdOpts);
 
       const data = await graphqlRequest(CREATE_REQUEST_IN_COLLECTION, {
@@ -349,6 +361,8 @@ export function createRequestCommand(globalOpts) {
     .option('--oauth-scope <scope>', 'OAuth scopes')
     .option('--pre-request-script <script>', 'Pre-request JavaScript code')
     .option('--pre-request-script-file <path>', 'Path to pre-request script file')
+    .option('--test-script <script>', 'Test script JavaScript code')
+    .option('--test-script-file <path>', 'Path to test script file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
@@ -383,7 +397,8 @@ export function createRequestCommand(globalOpts) {
         oauthClientId: cmdOpts.oauthClientId || currentReq.auth?.grantTypeInfo?.clientID,
         oauthClientSecret: cmdOpts.oauthClientSecret || currentReq.auth?.grantTypeInfo?.clientSecret,
         oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes,
-        preRequestScript: cmdOpts.preRequestScript || currentReq.preRequestScript
+        preRequestScript: cmdOpts.preRequestScript || currentReq.preRequestScript,
+        testScript: cmdOpts.testScript || currentReq.testScript
       };
 
       // Handle pre-request script from file
@@ -392,6 +407,16 @@ export function createRequestCommand(globalOpts) {
           updatedOptions.preRequestScript = readFileSync(cmdOpts.preRequestScriptFile, 'utf-8');
         } catch (e) {
           error(`Failed to read pre-request script file: ${e.message}`);
+          process.exit(4);
+        }
+      }
+
+      // Handle test script from file
+      if (cmdOpts.testScriptFile && !cmdOpts.testScript) {
+        try {
+          updatedOptions.testScript = readFileSync(cmdOpts.testScriptFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read test script file: ${e.message}`);
           process.exit(4);
         }
       }
