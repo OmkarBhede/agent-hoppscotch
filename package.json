@@ -1,6 +1,6 @@
 {
   "name": "agent-hoppscotch",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "CLI for AI agents to interact with Hoppscotch API - manage teams, collections, requests, and environments",
   "type": "module",
   "bin": {

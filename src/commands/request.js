@@ -67,6 +67,24 @@ function buildAuthObject(options) {
   }
 }
 
+function buildBodyObject(options) {
+  const contentType = options.bodyType || "application/json";
+
+  // Handle multipart/form-data with --form option
+  if (contentType === "multipart/form-data" && options.form) {
+    const formData = JSON.parse(options.form);
+    const body = formData.map(field => ({
+      key: field.key,
+      value: field.isFile ? [] : (field.value || ""),
+      isFile: field.isFile || false,
+      active: field.active !== false
+    }));
+    return { contentType, body };
+  }
+
+  return { contentType, body: options.body || "" };
+}
+
 function buildRequestBody(options) {
   return JSON.stringify({
     v: "5",
@@ -75,10 +93,7 @@ function buildRequestBody(options) {
     method: options.method || "GET",
     headers: options.headers ? JSON.parse(options.headers) : [],
     params: options.params ? JSON.parse(options.params) : [],
-    body: {
-      contentType: options.bodyType || "application/json",
-      body: options.body || ""
-    },
+    body: buildBodyObject(options),
     auth: buildAuthObject(options),
     preRequestScript: options.preRequestScript || "",
     testScript: options.testScript || "",
@@ -223,6 +238,7 @@ export function createRequestCommand(globalOpts) {
     .option('--headers <json>', 'Headers JSON array')
     .option('--body <json>', 'Request body')
     .option('--body-type <type>', 'Content type (application/json, multipart/form-data, application/x-www-form-urlencoded, text/plain, none)')
+    .option('--form <json>', 'Form data for multipart/form-data: [{"key":"k","value":"v","isFile":false}]')
     .option('--auth-type <type>', 'Auth type (bearer, basic, api-key, oauth2, inherit, none)')
     .option('--auth-token <token>', 'Auth token (for bearer)')
     .option('--auth-username <username>', 'Username (for basic)')
@@ -348,6 +364,7 @@ export function createRequestCommand(globalOpts) {
     .option('--headers <json>', 'Headers JSON array')
     .option('--body <json>', 'Request body')
     .option('--body-type <type>', 'Content type')
+    .option('--form <json>', 'Form data for multipart/form-data')
     .option('--auth-type <type>', 'Auth type (bearer, basic, api-key, oauth2, inherit, none)')
     .option('--auth-token <token>', 'Auth token (for bearer)')
     .option('--auth-username <username>', 'Username (for basic)')
@@ -387,6 +404,7 @@ export function createRequestCommand(globalOpts) {
         headers: cmdOpts.headers || JSON.stringify(currentReq.headers || []),
         body: cmdOpts.body || currentReq.body?.body,
         bodyType: cmdOpts.bodyType || currentReq.body?.contentType,
+        form: cmdOpts.form || (Array.isArray(currentReq.body?.body) ? JSON.stringify(currentReq.body.body) : null),
         authType: cmdOpts.authType || currentReq.auth?.authType,
         authToken: cmdOpts.authToken || currentReq.auth?.token,
         authUsername: cmdOpts.authUsername || currentReq.auth?.username,

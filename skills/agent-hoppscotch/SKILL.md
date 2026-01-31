@@ -73,6 +73,7 @@ agent-hoppscotch request create \
   --title "..." --method GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS \
   --url "..." [--collection <id>] [--team <id>] \
   [--headers '<json>'] [--body '<json>'] [--body-type application/json|multipart/form-data|application/x-www-form-urlencoded|text/plain|none] \
+  [--form '[{"key":"k","value":"v","isFile":false}]'] \
   [--params '<json>'] [--auth-type bearer|basic|api-key|oauth2|inherit|none] \
   [--auth-token "..."] [--auth-username "..."] [--auth-password "..."] \
   [--auth-key "..."] [--auth-value "..."] [--auth-add-to header|query] \
@@ -80,7 +81,7 @@ agent-hoppscotch request create \
   [--oauth-client-id "..."] [--oauth-client-secret "..."] [--oauth-scope "..."] \
   [--pre-request-script '<js>'] [--pre-request-script-file <path>] \
   [--test-script '<js>'] [--test-script-file <path>] [--variables '<json>'] [--validate-body]
-agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] \
+agent-hoppscotch request update <id> [--title] [--method] [--url] [--headers] [--body] [--body-type] [--form] \
   [--auth-type] [--auth-token] [--auth-username] [--auth-password] \
   [--auth-key] [--auth-value] [--auth-add-to] \
   [--oauth-grant-type] [--oauth-token-url] [--oauth-client-id] [--oauth-client-secret] [--oauth-scope] \
