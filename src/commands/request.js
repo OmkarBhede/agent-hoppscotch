@@ -119,7 +119,7 @@ function parseParams(paramsJson) {
 }
 
 function buildRequestBody(options) {
-  return JSON.stringify({
+  const body = {
     v: "5",
     name: options.title,
     endpoint: options.url || options.endpoint || "",
@@ -131,7 +131,11 @@ function buildRequestBody(options) {
     preRequestScript: options.preRequestScript || "",
     testScript: options.testScript || "",
     requestVariables: options.variables ? JSON.parse(options.variables) : []
-  });
+  };
+  if (options.description) {
+    body.description = options.description;
+  }
+  return JSON.stringify(body);
 }
 
 function parseRequestJson(requestStr) {
@@ -255,6 +259,9 @@ export function createRequestCommand(globalOpts) {
           console.log(`  Endpoint:     ${req.endpoint}`);
           console.log(`  Headers:      ${req.headers?.length || 0}`);
           console.log(`  Body type:    ${req.body?.contentType || 'none'}`);
+          if (req.description) {
+            console.log(`  Description:  ${req.description.substring(0, 50)}${req.description.length > 50 ? '...' : ''}`);
+          }
         }
       }
     });
@@ -289,6 +296,8 @@ export function createRequestCommand(globalOpts) {
     .option('--test-script <script>', 'Test script JavaScript code (runs after response)')
     .option('--test-script-file <path>', 'Path to test script file')
     .option('--variables <json>', 'Request-level variables JSON array')
+    .option('--description <text>', 'Request description/documentation')
+    .option('--description-file <path>', 'Path to description file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (cmdOpts) => {
       const opts = globalOpts();
@@ -368,6 +377,16 @@ export function createRequestCommand(globalOpts) {
         }
       }
 
+      // Handle description from file
+      if (cmdOpts.descriptionFile && !cmdOpts.description) {
+        try {
+          cmdOpts.description = readFileSync(cmdOpts.descriptionFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read description file: ${e.message}`);
+          process.exit(4);
+        }
+      }
+
       const requestJson = buildRequestBody(cmdOpts);
 
       const data = await graphqlRequest(CREATE_REQUEST_IN_COLLECTION, {
@@ -415,6 +434,8 @@ export function createRequestCommand(globalOpts) {
     .option('--test-script <script>', 'Test script JavaScript code')
     .option('--test-script-file <path>', 'Path to test script file')
     .option('--variables <json>', 'Request-level variables JSON array')
+    .option('--description <text>', 'Request description/documentation')
+    .option('--description-file <path>', 'Path to description file')
     .option('--validate-body', 'Validate JSON body when body-type is application/json')
     .action(async (requestId, cmdOpts) => {
       const opts = globalOpts();
@@ -452,7 +473,8 @@ export function createRequestCommand(globalOpts) {
         oauthScope: cmdOpts.oauthScope || currentReq.auth?.grantTypeInfo?.scopes,
         preRequestScript: cmdOpts.preRequestScript || currentReq.preRequestScript,
         testScript: cmdOpts.testScript || currentReq.testScript,
-        variables: cmdOpts.variables || JSON.stringify(currentReq.requestVariables || [])
+        variables: cmdOpts.variables || JSON.stringify(currentReq.requestVariables || []),
+        description: cmdOpts.description || currentReq.description
       };
 
       // Handle pre-request script from file
@@ -471,6 +493,16 @@ export function createRequestCommand(globalOpts) {
           updatedOptions.testScript = readFileSync(cmdOpts.testScriptFile, 'utf-8');
         } catch (e) {
           error(`Failed to read test script file: ${e.message}`);
+          process.exit(4);
+        }
+      }
+
+      // Handle description from file
+      if (cmdOpts.descriptionFile && !cmdOpts.description) {
+        try {
+          updatedOptions.description = readFileSync(cmdOpts.descriptionFile, 'utf-8');
+        } catch (e) {
+          error(`Failed to read description file: ${e.message}`);
           process.exit(4);
         }
       }
